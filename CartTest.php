@@ -277,7 +277,10 @@ class Cart
                     $heightTwo = array_merge($heightTwo, [$bag]);
                 }
             }
-            $bags = new BundleBagSet($heightTwo);
+            $bags = new BundleBagSet();
+            foreach ($heightTwo as $bag) {
+                $bags->add($bag);
+            }
         }
         
         return $bags->minimumBag();
@@ -615,7 +618,7 @@ class BundleBag
 
 class BundleBagSet implements IteratorAggregate, Countable
 {
-    public function __construct(array $bundleBags)
+    public function __construct(array $bundleBags = [])
     {
         $this->bundleBags = $bundleBags;
     }
