@@ -214,6 +214,22 @@ class CartTest extends \PHPUnit_Framework_TestCase
             }
         }
     }
+
+    // BundleBag test
+    public function testABundleBagCanGiveAMinimumEstimateOfItsPriceByConsideringOnlyTheBundlesAndNotTheRemainingBooks()
+    {
+        $bundleBag = BundleBag::fromString('A;B|C=1,D=1');
+        $this->assertEquals(8 * 2, $bundleBag->minimumPrice());
+    }
+
+    // BundleBagSet tests
+    public function testBundleBagSetsCannotContainDuplicateBundleBags()
+    {
+        $this->assertEquals(
+            new BundleBagSet([BundleBag::fromString('A,B|')]),
+            (new BundleBagSet([BundleBag::fromString('A,B|')]))->add(BundleBag::fromString('A,B|'))
+        );
+    }
 }
 
 class Cart
@@ -230,7 +246,7 @@ class Cart
 
     public function price()
     {
-        $this->optimalBundles() ;
+        $this->optimalBundles();
         return $this->sumOf(
             $this->optimize($this->divideInBundles())
         );
@@ -238,13 +254,31 @@ class Cart
 
     private function optimalBundles()
     {
-        $tuples = Bundle::extractAllUpTo($this->books, 5)->asBags();
-        $heightTwo = [];
-        foreach ($tuples as $bundleBag) {
-            $heightTwo = array_merge($heightTwo, $bundleBag->expand(5));
+        $bags = Bundle::extractAllUpTo($this->books, 5)->asBags();
+
+        $finished = false;
+        $i = 0;
+        while (!$finished) {
+            $finished = true;
+            $heightTwo = [];
+            foreach ($bags as $bag) {
+                if ($bag->hasRemainingBooks()) {
+                    $finished = false;
+                    $heightTwo = array_merge($heightTwo, $bag->expand(5));
+                } else {
+                    $heightTwo = array_merge($heightTwo, [$bag]);
+                }
+            }
+            $bags = $heightTwo;
+            $i++;
+            if ($i == 2) {
+                break;
+            }
         }
-        var_dump(count($heightTwo));
-        return $heightTwo;
+        foreach ($bags as $bag) {
+            echo $bag, PHP_EOL;
+        }
+        var_dump(count($bags), $finished);
     }
 
     private function divideInBundles()
@@ -361,6 +395,16 @@ class Bundle implements Countable
     {
         sort($titles);
         $this->titles = $titles;
+    }
+
+    public function __toString()
+    {
+        return implode(',', $this->titles);
+    }
+
+    public static function fromString($representation)
+    {
+        return new self(explode(',', $representation));
     }
 
     public function price()
@@ -491,6 +535,37 @@ class BundleBag
         $this->remainingBooks = $remainingBooks;
     }
 
+    public function hasRemainingBooks()
+    {
+        return count($this->remainingBooks) > 0;
+    }
+
+    public function __toString()
+    {
+        $remainingBooks = [];
+        foreach ($this->remainingBooks as $title => $number) {
+            $remainingBooks[] = "{$title}={$number}";
+        }
+        return implode(';', $this->bundles) . '|' . implode(';', $remainingBooks);
+    }
+
+    public static function fromString($representation)
+    {
+        list ($bagsRepresentations, $remainingBooksRepresentation) = explode("|", $representation);
+        $bags = [];
+        foreach (explode(";", $bagsRepresentations) as $bagRepresentation) {
+            $bags[] = Bundle::fromString($bagRepresentation); 
+        }
+        $remainingBooks = [];
+        if ($remainingBooksRepresentation) {
+            foreach (explode(";", $remainingBooksRepresentation) as $remainingBook) {
+                list ($title, $number) = explode('=', $remainingBook);
+                $remainingBooks[$title] = $number;
+            }
+        }
+        return new self($bags, $remainingBooks);
+    }
+
     public function add(Bundle $bundle, array $newRemainingBooks)
     {
         return new self(
@@ -498,10 +573,14 @@ class BundleBag
             $newRemainingBooks
         );
     }
-
-    public function remainingBooks()
+    
+    public function minimumPrice()
     {
-        return $this->remainingBooks;
+        $minimum = 0;
+        foreach ($this->bundles as $bundle) {
+            $minimum += $bundle->price();
+        }
+        return $minimum;
     }
 
     public function expand($bundleMaximumCardinality)
@@ -512,5 +591,24 @@ class BundleBag
             $heightTwo[] = $this->add($bundle, $newRemainingBooks);
         }
         return $heightTwo;
+    }
+}
+
+class BundleBagSet
+{
+    public function __construct(array $bundleBags)
+    {
+        $this->bundleBags = $bundleBags;
+    }
+
+    public function add(BundleBag $bag)
+    {
+        foreach ($this->bundleBags as $each) {
+            if ($each == $bag) {
+                return $this;
+            }
+        }
+        $this->bundleBags[] = $bag;
+        return $this;
     }
 }
