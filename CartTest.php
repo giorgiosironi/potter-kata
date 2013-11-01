@@ -84,13 +84,6 @@ class CartTest extends \PHPUnit_Framework_TestCase
 class Cart
 {
     private $books = [];
-    const PRICE_SINGLE = 8;
-    private $discountScale = [
-        2 => 0.05,
-        3 => 0.10,
-        4 => 0.20,
-        5 => 0.25,
-    ];
 
     public function addBooks($title, $number = 1)
     {
@@ -102,14 +95,8 @@ class Cart
 
     public function price()
     {
-        $numberOfDifferentBooks = 0;
-        foreach ($this->books as $title => $number) {
-            $numberOfDifferentBooks += $number;
-        }
-        $discount = isset($this->discountScale[$numberOfDifferentBooks]) ? $this->discountScale[$numberOfDifferentBooks] : 0;
-        return self::PRICE_SINGLE 
-            * $numberOfDifferentBooks
-            * (1 - $discount);
+        list ($bundle, $remainingBooks) = Bundle::extractFrom($this->books);
+        return $bundle->price();
     }
 }
 
