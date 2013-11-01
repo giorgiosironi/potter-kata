@@ -230,14 +230,21 @@ class Cart
 
     public function price()
     {
+        $this->optimalBundles() ;
         return $this->sumOf(
-            //$this->optimalBundles() 
             $this->optimize($this->divideInBundles())
         );
     }
 
     private function optimalBundles()
     {
+        $tuples = Bundle::extractAllUpTo($this->books, 5)->asBags();
+        $heightTwo = [];
+        foreach ($tuples as $bundleBag) {
+            $heightTwo = array_merge($heightTwo, $bundleBag->expand(5));
+        }
+        var_dump(count($heightTwo));
+        return $heightTwo;
     }
 
     private function divideInBundles()
@@ -429,6 +436,16 @@ class BundleSet implements IteratorAggregate, ArrayAccess, Countable
         return new ArrayIterator($entries);
     }
 
+    public function asBags()
+    {
+        $entries = [];
+        foreach ($this as $tuple) {
+            list($bundle, $remainingBooks) = $tuple;
+            $entries[] = new BundleBag([$bundle], $remainingBooks);
+        }
+        return new ArrayIterator($entries);
+    }
+
     public function count()
     {
         return count($this->bundles);
@@ -463,5 +480,37 @@ class BundleSet implements IteratorAggregate, ArrayAccess, Countable
     public function offsetUnset($offset)
     {
         throw new Exception();
+    }
+}
+
+class BundleBag
+{
+    public function __construct(array $bundles, array $remainingBooks)
+    {
+        $this->bundles = $bundles;
+        $this->remainingBooks = $remainingBooks;
+    }
+
+    public function add(Bundle $bundle, array $newRemainingBooks)
+    {
+        return new self(
+            array_merge($this->bundles, [$bundle]),
+            $newRemainingBooks
+        );
+    }
+
+    public function remainingBooks()
+    {
+        return $this->remainingBooks;
+    }
+
+    public function expand($bundleMaximumCardinality)
+    {
+        $heightTwo = [];
+        foreach (Bundle::extractAllUpTo($this->remainingBooks, $bundleMaximumCardinality) as $secondTuple) {
+            list($bundle, $newRemainingBooks) = $secondTuple;
+            $heightTwo[] = $this->add($bundle, $newRemainingBooks);
+        }
+        return $heightTwo;
     }
 }
