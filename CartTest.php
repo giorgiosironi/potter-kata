@@ -60,6 +60,19 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(8 * 3 * 0.90 + 8, $this->cart->price());
     }
 
+    public function test6BooksInTheCartButThreeAndTwoAreIdentical()
+    {
+        $this->cart->addBooks('A', 3);
+        $this->cart->addBooks('B', 2);
+        $this->cart->addBooks('C');
+        $this->assertEquals(
+            8 * 3 * 0.90 + 
+            8 * 2 * 0.95 + 
+            8, 
+            $this->cart->price()
+        );
+    }
+
     public function testABundleCalculateAPriceOnlyOnDifferentBooks()
     {
         list ($bundle, $remainingBooks) = Bundle::extractFrom(['A' => 1, 'B' => 1]);
@@ -94,11 +107,11 @@ class Cart
 
     public function price()
     {
-        list ($bundle, $remainingBooks) = Bundle::extractFrom($this->books);
-        $price = $bundle->price();
-        if ($remainingBooks) {
-            list ($bundle2, ) = Bundle::extractFrom($remainingBooks);
-            $price += $bundle2->price();
+        $remainingBooks = $this->books;
+        $price = 0;
+        while ($remainingBooks) {
+            list ($bundle, $remainingBooks) = Bundle::extractFrom($remainingBooks);
+            $price += $bundle->price();
         }
         return $price;
     }
