@@ -169,11 +169,19 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(8 * 2, $bundleBag->minimumPrice());
     }
 
-    public function testAnAnonymousBundleBagChangesTheNameOfTheBooksToCanonicalOnesToBeEqualToEuivalentOnes()
+    public function testAnAnonymousBundleBagChangesTheNameOfTheBooksToCanonicalOnesToBeEqualToEquivalentOnes()
     {
         $this->assertEquals(
             BundleBag::fromString('A;B|C=2;D=1')->anonymous(),
             BundleBag::fromString('A;B|C=1;D=2')->anonymous()
+        );
+    }
+
+    public function testBundleBagAlsoReordersBundlesWhenTheBagIsEquivalent()
+    {
+        $this->assertEquals(
+            BundleBag::fromString('X;X,X|C=1'),
+            BundleBag::fromString('X,X;X|C=1')
         );
     }
 
