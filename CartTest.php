@@ -139,10 +139,29 @@ class Cart
 
     public function price()
     {
+        return $this->sumOf($this->optimize($this->divideInBundles()));
+    }
+
+    private function divideInBundles()
+    {
+        $bundles = [];
         $remainingBooks = $this->books;
-        $price = 0;
         while ($remainingBooks) {
             list ($bundle, $remainingBooks) = Bundle::extractGreedily($remainingBooks);
+            $bundles[] = $bundle;
+        }
+        return $bundles;
+    }
+
+    private function optimize(array $bundles)
+    {
+        return $bundles;
+    }
+
+    private function sumOf(array $bundles)
+    {
+        $price = 0;
+        foreach ($bundles as $bundle) {
             $price += $bundle->price();
         }
         return $price;
