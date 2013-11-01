@@ -231,6 +231,14 @@ class CartTest extends \PHPUnit_Framework_TestCase
             (new BundleBagSet([BundleBag::fromString('A,B|')]))->add(BundleBag::fromString('A,B|'))
         );
     }
+
+    public function testBundleBagsCreatedInDifferentOrderAreStillIdentical()
+    {
+        $this->assertEquals(
+            new BundleBagSet([BundleBag::fromString('A;B|')]),
+            (new BundleBagSet([BundleBag::fromString('B;A|')]))->add(BundleBag::fromString('A;B|'))
+        );
+    }
 }
 
 class Cart
@@ -525,6 +533,9 @@ class BundleBag
 {
     public function __construct(array $bundles, array $remainingBooks)
     {
+        usort($bundles, function($bundleA, $bundleB) {
+            return strcmp((string) $bundleA, (string) $bundleB);
+        });
         $this->bundles = $bundles;
         $this->remainingBooks = $remainingBooks;
     }
@@ -643,6 +654,7 @@ class BundleBagSet implements IteratorAggregate, Countable
                 $minimumBag = $bag;
             }
         }
+        echo "Evaluated " . count($this->bundleBags) . " solutions." , PHP_EOL;
         return $minimumBag;
     }
 
