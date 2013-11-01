@@ -32,13 +32,26 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->cart->addBooks(1);
         $this->assertEquals(8 * 3 * 0.90, $this->cart->price());
     }
+
+    public function test4DifferentBooksInTheCart()
+    {
+        $this->cart->addBooks(1);
+        $this->cart->addBooks(1);
+        $this->cart->addBooks(1);
+        $this->cart->addBooks(1);
+        $this->assertEquals(8 * 4 * 0.80, $this->cart->price());
+    }
 }
 
 class Cart
 {
     private $books = 0;
     const PRICE_SINGLE = 8;
-    const DISCOUNT_SINGLE = 0.05;
+    private $discountScale = [
+        2 => 0.05,
+        3 => 0.10,
+        4 => 0.20,
+    ];
 
     public function addBooks($number)
     {
@@ -47,7 +60,8 @@ class Cart
 
     public function price()
     {
-        $discount = ($this->books - 1) * self::DISCOUNT_SINGLE;
+        $numberOfDifferentBooks = $this->books;
+        $discount = isset($this->discountScale[$numberOfDifferentBooks]) ? $this->discountScale[$numberOfDifferentBooks] : 0;
         return self::PRICE_SINGLE 
             * $this->books
             * (1 - $discount);
