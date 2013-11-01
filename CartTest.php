@@ -241,10 +241,16 @@ class Cart
             foreach ($heightTwo as $bag) {
                 $bags->add($bag->anonymous());
             }
+            $max = 0;
             foreach ($bags as $bag) {
-                error_log($bag);
+                $candidate = array_sum(array_values($bag->remainingBooks));
+                if ($candidate > $max) {
+                    $max = $candidate;
+                }
+                //error_log($bag);
             }
             error_log("BundleBagSet now contains " . count($bags) . " bags");
+            error_log("Maximum remaining books is $max");
         }
         
         return $bags->minimumBag();
@@ -262,6 +268,7 @@ class Bundle implements Countable
         5 => 0.25,
     ];
     private $titles;
+    private static $bundlesMemoization;
 
     public static function extractAllUpTo(array $books, $maximumCardinality)
     {
@@ -279,6 +286,17 @@ class Bundle implements Countable
                 [new self([]), $books]
             ];
         }
+
+        $signatureBooks = [];
+        foreach ($books as $title => $number) {
+            $signatureBooks[] = "{$title}={$number}";
+        }
+        $signature = implode(";", $signatureBooks) . "|" . $cardinality;
+
+        if (isset(self::$bundlesMemoization[$signature])) {
+            return self::$bundlesMemoization[$signature];
+        }
+
         $all = new BundleSet();
         $previousCardinalityBundles = self::extractAll($books, $cardinality - 1);
         foreach ($previousCardinalityBundles as $tuple) {
@@ -299,6 +317,7 @@ class Bundle implements Countable
                 );
             }
         }
+        self::$bundlesMemoization[$signature] = $all;
         return $all;
     }
 
