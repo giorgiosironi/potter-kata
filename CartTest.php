@@ -73,6 +73,22 @@ class CartTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testMegaAcceptanceTestFromC2Wiki()
+    {
+        $this->cart->addBooks('A', 2);
+        $this->cart->addBooks('B', 2);
+        $this->cart->addBooks('C', 2);
+        $this->cart->addBooks('D');
+        $this->cart->addBooks('E');
+        $this->assertEquals(
+            4 * 8 * 0.80 + 
+            4 * 8 * 0.80,
+            $this->cart->price()
+        );
+    }
+
+    // -- Bundle unit tests
+
     public function testABundleCalculateAPriceOnlyOnDifferentBooks()
     {
         list ($bundle, $remainingBooks) = Bundle::extractFrom(['A' => 1, 'B' => 1]);
