@@ -149,6 +149,12 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(['A' => 1], $remainingBooks);
     }
 
+    public function testAllPossibleBundlesOfUpToNBooksCanBeRequested()
+    {
+        $all = Bundle::extractAllUpTo(['A' => 1, 'B' => 1, 'C' => 1], 2);
+        $this->assertEquals(6, count($all));
+    }
+
     public function testIdenticalBooksCannotGoInTheSameBundle()
     {
         $all = Bundle::extractAll(['A' => 2, 'B' => 1], 2);
@@ -224,7 +230,14 @@ class Cart
 
     public function price()
     {
-        return $this->sumOf($this->optimize($this->divideInBundles()));
+        return $this->sumOf(
+            //$this->optimalBundles() 
+            $this->optimize($this->divideInBundles())
+        );
+    }
+
+    private function optimalBundles()
+    {
     }
 
     private function divideInBundles()
@@ -296,6 +309,15 @@ class Bundle implements Countable
             }
         }
         return [new self($titles), $books];
+    }
+
+    public static function extractAllUpTo(array $books, $maximumCardinality)
+    {
+        $bundleSet = new BundleSet();
+        for ($i = 1; $i <= $maximumCardinality; $i++) {
+            $bundleSet = $bundleSet->merge(self::extractAll($books, $i));
+        }
+        return $bundleSet;
     }
 
     public static function extractAll(array $books, $cardinality)
@@ -378,7 +400,7 @@ class Bundle implements Countable
     }
 }
 
-class BundleSet implements IteratorAggregate,ArrayAccess
+class BundleSet implements IteratorAggregate, ArrayAccess, Countable
 {
     public function __construct($bundles = [], $remainingBooksList = [])
     {
@@ -405,6 +427,22 @@ class BundleSet implements IteratorAggregate,ArrayAccess
             $entries[] = [$bundle, $remainingBooks];
         }
         return new ArrayIterator($entries);
+    }
+
+    public function count()
+    {
+        return count($this->bundles);
+    }
+
+    /**
+     * Does not guarantee no duplicates
+     */
+    public function merge(BundleSet $another)
+    {
+        return new self(
+            array_merge($this->bundles, $another->bundles),
+            array_merge($this->remainingBooksList, $another->remainingBooksList)
+        );
     }
 
     public function offsetGet($offset)
