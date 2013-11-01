@@ -124,6 +124,24 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, count($sourceBundle));
     }
 
+    public function testMovementOfANumberOfBooksBetweenBundlesCanBeRequested()
+    {
+        $targetBundle = new Bundle(['A', 'B']);
+        $sourceBundle = new Bundle(['C', 'D']);
+        $sourceBundle->move(1, $targetBundle);
+        $this->assertEquals(new Bundle(['A', 'B', 'C']), $targetBundle);
+        $this->assertEquals(new Bundle(['D']), $sourceBundle);
+    }
+
+    public function testNoDuplicatesCanBeCreatedDuringMovement()
+    {
+        $targetBundle = new Bundle(['A', 'B']);
+        $sourceBundle = new Bundle(['A', 'C']);
+        $sourceBundle->move(1, $targetBundle);
+        $this->assertEquals(new Bundle(['A', 'B', 'C']), $targetBundle);
+        $this->assertEquals(new Bundle(['A']), $sourceBundle);
+    }
+
     public function testPossibleMovements()
     {
         $bundle = new Bundle([]);
@@ -191,7 +209,7 @@ class Cart
             }
         }
         for ($i = 0; $i < count($candidateSources) && $i < count($candidateTargets); $i++) {
-            $candidateSources[$i]->move('E', $candidateTargets[$i]);
+            $candidateSources[$i]->move(1, $candidateTargets[$i]);
         }
         return $bundles;
     }
@@ -252,8 +270,21 @@ class Bundle implements Countable
 
     public function move($title, Bundle $target)
     {
-        $target->titles[] = $title;
-        unset($this->titles[array_search($title, $this->titles)]);
+        if (is_string($title)) {
+            unset($this->titles[array_search($title, $this->titles)]);
+            $target->titles[] = $title;
+        } else {
+            $howMany = $title;
+            if ($howMany == 0) {
+                return;
+            }
+            // support only $howMany == 1
+            $possibleMovements  = array_diff($this->titles, $target->titles);
+            $this->move(reset($possibleMovements), $target);
+            $this->move($howMany - 1, $target);
+            $this->titles = array_values($this->titles);
+            $target->titles = array_values($target->titles);
+        }
     }
 
     public function count()
