@@ -271,7 +271,6 @@ class Cart
             }
             $bags = new BundleBagSet($heightTwo);
         }
-        echo $bags->minimumBag();
         
         return $bags->minimumBag();
     }
@@ -405,7 +404,6 @@ class Bundle implements Countable
     public function price()
     {
         $numberOfDifferentBooks = count($this->titles);
-        vaR_dump($this->titles);
         $discount = $this->discountScale[$numberOfDifferentBooks];
         return self::PRICE_SINGLE 
             * $numberOfDifferentBooks
