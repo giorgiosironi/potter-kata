@@ -66,6 +66,12 @@ class CartTest extends \PHPUnit_Framework_TestCase
         list ($bundle, $remainingBooks) = Bundle::extractFrom(['A' => 1, 'B' => 1]);
         $this->assertEquals(8 * 2 * 0.95, $bundle->price());
     }
+
+    public function testABundleCalculateAPriceOnAnyNumberOfDifferentBooks()
+    {
+        list ($bundle, $remainingBooks) = Bundle::extractFrom(['A' => 1, 'B' => 1, 'C' => 1, 'D' => 1, 'E' => 1]);
+        $this->assertEquals(8 * 5 * 0.75, $bundle->price());
+    }
 }
 
 class Cart
@@ -102,12 +108,19 @@ class Cart
 
 class Bundle
 {
+    const PRICE_SINGLE = 8;
+    private $discountScale = [
+        2 => 0.05,
+        3 => 0.10,
+        4 => 0.20,
+        5 => 0.25,
+    ];
+    private $titles;
+
     public static function extractFrom(array $books)
     {
         return [new self(array_keys($books)), []];
     }
-
-    private $titles;
 
     private function __construct($titles)
     {
@@ -116,6 +129,10 @@ class Bundle
 
     public function price()
     {
-        return count($this->titles) * 8 * 0.95;
+        $numberOfDifferentBooks = count($this->titles);
+        $discount = isset($this->discountScale[$numberOfDifferentBooks]) ? $this->discountScale[$numberOfDifferentBooks] : 0;
+        return self::PRICE_SINGLE 
+            * $numberOfDifferentBooks
+            * (1 - $discount);
     }
 }
