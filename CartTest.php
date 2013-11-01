@@ -114,6 +114,15 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(new Bundle(['A', 'B']), $bundle);
         $this->assertEquals(['C' => 1], $remainingBooks);
     }
+
+    public function testMovementOfBooksBetweenBundles()
+    {
+        $targetBundle = new Bundle(['A', 'B']);
+        $sourceBundle = new Bundle(['C', 'D']);
+        $sourceBundle->move('D', $targetBundle);
+        $this->assertEquals(3, count($targetBundle));
+        $this->assertEquals(1, count($sourceBundle));
+    }
 }
 
 class Cart
@@ -140,7 +149,7 @@ class Cart
     }
 }
 
-class Bundle
+class Bundle implements Countable
 {
     const PRICE_SINGLE = 8;
     private $discountScale = [
@@ -182,5 +191,16 @@ class Bundle
         return self::PRICE_SINGLE 
             * $numberOfDifferentBooks
             * (1 - $discount);
+    }
+
+    public function move($title, Bundle $target)
+    {
+        $target->titles[] = $title;
+        unset($this->titles[array_search($title, $this->titles)]);
+    }
+
+    public function count()
+    {
+        return count($this->titles);
     }
 }
