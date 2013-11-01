@@ -132,7 +132,7 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(['A' => 1, 'B' => 1], $remainingBooks);
     }
 
-    public function testAllPossibleBundlesOfTwoBooksBooksCanBeRequested()
+    public function testAllPossibleBundlesOfTwoBooksCanBeRequested()
     {
         $all = Bundle::extractAll(['A' => 1, 'B' => 1, 'C' => 1], 2);
 
@@ -141,12 +141,12 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(['C' => 1], $remainingBooks);
 
         list ($bundle, $remainingBooks) = $all[1];
-        $this->assertEquals(new Bundle(['B', 'C']), $bundle);
-        $this->assertEquals(['A' => 1], $remainingBooks);
-
-        list ($bundle, $remainingBooks) = $all[2];
         $this->assertEquals(new Bundle(['A', 'C']), $bundle);
         $this->assertEquals(['B' => 1], $remainingBooks);
+
+        list ($bundle, $remainingBooks) = $all[2];
+        $this->assertEquals(new Bundle(['B', 'C']), $bundle);
+        $this->assertEquals(['A' => 1], $remainingBooks);
     }
 
     public function testMovementOfBooksBetweenBundles()
@@ -176,7 +176,7 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(new Bundle(['A']), $sourceBundle);
     }
 
-    public function testPossibleMovements()
+    public function _testPossibleMovements()
     {
         $bundle = new Bundle([]);
         foreach ($bundle->discountScale as $numberA => $discountA) {
@@ -290,24 +290,37 @@ class Bundle implements Countable
 
     public static function extractAll(array $books, $cardinality)
     {
-        $all = [];
-        foreach ($books as $title => $number) {
-            $remainingBooks = $books;
-            $bundle = new self([$title]);
-            $remainingBooks[$title]--;
-            if ($remainingBooks[$title] == 0) {
-                unset($remainingBooks[$title]);
-            }
-            $all[] = [
-                $bundle,
-                $remainingBooks
+        if ($cardinality == 0) {
+            return [
+                [new Bundle([]), $books]
             ];
+        }
+        $all = new BundleSet();
+        $previousCardinalityBundles = self::extractAll($books, $cardinality - 1);
+        foreach ($previousCardinalityBundles as $tuple) {
+            list($bundle, $remainingBooksForBundle) = $tuple;
+            foreach ($remainingBooksForBundle as $title => $number) {
+                $remainingBooks = $remainingBooksForBundle;
+                if ($bundle->contains($title)) {
+                    continue;
+                }
+                $newBundle = $bundle->merge($title);
+                $remainingBooks[$title]--;
+                if ($remainingBooks[$title] == 0) {
+                    unset($remainingBooks[$title]);
+                }
+                $all->add(
+                    $newBundle,
+                    $remainingBooks
+                );
+            }
         }
         return $all;
     }
 
     public function __construct($titles)
     {
+        sort($titles);
         $this->titles = $titles;
     }
 
@@ -318,6 +331,16 @@ class Bundle implements Countable
         return self::PRICE_SINGLE 
             * $numberOfDifferentBooks
             * (1 - $discount);
+    }
+
+    public function merge($title)
+    {
+        return new self(array_merge($this->titles, [$title]));
+    }
+
+    public function contains($title)
+    {
+        return array_search($title, $this->titles) !== false;
     }
 
     public function move($title, Bundle $target)
@@ -342,5 +365,55 @@ class Bundle implements Countable
     public function count()
     {
         return count($this->titles);
+    }
+}
+
+class BundleSet implements IteratorAggregate,ArrayAccess
+{
+    public function __construct($bundles = [], $remainingBooksList = [])
+    {
+        $this->bundles = $bundles;
+        $this->remainingBooksList = $remainingBooksList;
+    }
+
+    public function add(Bundle $bundle, array $remainingBooks)
+    {
+        foreach ($this->bundles as $each) {
+            if ($each == $bundle) {
+                return;
+            }
+        }
+        $this->bundles[] = $bundle;
+        $this->remainingBooksList[] = $remainingBooks;
+    }
+
+    public function getIterator()
+    {
+        $entries = [];
+        foreach ($this->bundles as $key => $bundle) {
+            $remainingBooks = $this->remainingBooksList[$key];
+            $entries[] = [$bundle, $remainingBooks];
+        }
+        return new ArrayIterator($entries);
+    }
+
+    public function offsetGet($offset)
+    {
+        return [$this->bundles[$offset], $this->remainingBooksList[$offset]];
+    }
+
+    public function offsetExists($offset)
+    {
+        throw new Exception();
+    }
+
+    public function offsetSet($offset, $value)
+    {
+        throw new Exception();
+    }
+
+    public function offsetUnset($offset)
+    {
+        throw new Exception();
     }
 }
