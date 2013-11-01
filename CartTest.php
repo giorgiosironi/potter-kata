@@ -54,7 +54,6 @@ class CartTest extends \PHPUnit_Framework_TestCase
 
     public function test4BooksInTheCartButTwoAreIdentical()
     {
-        $this->markTestIncomplete();
         $this->cart->addBooks('A', 2);
         $this->cart->addBooks('B');
         $this->cart->addBooks('C');
@@ -96,7 +95,12 @@ class Cart
     public function price()
     {
         list ($bundle, $remainingBooks) = Bundle::extractFrom($this->books);
-        return $bundle->price();
+        $price = $bundle->price();
+        if ($remainingBooks) {
+            list ($bundle2, ) = Bundle::extractFrom($remainingBooks);
+            $price += $bundle2->price();
+        }
+        return $price;
     }
 }
 
