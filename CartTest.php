@@ -107,6 +107,13 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(new Bundle(['A', 'B']), $bundle);
         $this->assertEquals(['A' => 1], $remainingBooks);
     }
+
+    public function testAMaximumCardinalityOfABundleCanBeRequested()
+    {
+        list ($bundle, $remainingBooks) = Bundle::extractGreedily(['A' => 1, 'B' => 1, 'C' => 1], 2);
+        $this->assertEquals(new Bundle(['A', 'B']), $bundle);
+        $this->assertEquals(['C' => 1], $remainingBooks);
+    }
 }
 
 class Cart
@@ -144,15 +151,20 @@ class Bundle
     ];
     private $titles;
 
-    public static function extractGreedily(array $books)
+    public static function extractGreedily(array $books, $maximumCardinality = 5)
     {
         $titles = [];
+        $extracted = 0;
         foreach ($books as $title => $number) {
             $books[$title]--;
             if ($books[$title] == 0) {
                 unset($books[$title]);
             }
             $titles[] = $title;
+            $extracted++;
+            if ($extracted == $maximumCardinality) {
+                break;
+            }
         }
         return [new self($titles), $books];
     }
