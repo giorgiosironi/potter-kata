@@ -24,6 +24,14 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->cart->addBooks(1);
         $this->assertEquals(8 * 2 * 0.95, $this->cart->price());
     }
+
+    public function test3DifferentBooksInTheCart()
+    {
+        $this->cart->addBooks(1);
+        $this->cart->addBooks(1);
+        $this->cart->addBooks(1);
+        $this->assertEquals(8 * 3 * 0.90, $this->cart->price());
+    }
 }
 
 class Cart
