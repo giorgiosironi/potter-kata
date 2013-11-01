@@ -115,6 +115,40 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(['C' => 1], $remainingBooks);
     }
 
+    public function testAllPossibleBundlesOfSingleBooksCanBeRequested()
+    {
+        $all = Bundle::extractAll(['A' => 1, 'B' => 1, 'C' => 1], 1);
+
+        list ($bundle, $remainingBooks) = $all[0];
+        $this->assertEquals(new Bundle(['A']), $bundle);
+        $this->assertEquals(['B' => 1, 'C' => 1], $remainingBooks);
+
+        list ($bundle, $remainingBooks) = $all[1];
+        $this->assertEquals(new Bundle(['B']), $bundle);
+        $this->assertEquals(['A' => 1, 'C' => 1], $remainingBooks);
+
+        list ($bundle, $remainingBooks) = $all[2];
+        $this->assertEquals(new Bundle(['C']), $bundle);
+        $this->assertEquals(['A' => 1, 'B' => 1], $remainingBooks);
+    }
+
+    public function testAllPossibleBundlesOfTwoBooksBooksCanBeRequested()
+    {
+        $all = Bundle::extractAll(['A' => 1, 'B' => 1, 'C' => 1], 2);
+
+        list ($bundle, $remainingBooks) = $all[0];
+        $this->assertEquals(new Bundle(['A', 'B']), $bundle);
+        $this->assertEquals(['C' => 1], $remainingBooks);
+
+        list ($bundle, $remainingBooks) = $all[1];
+        $this->assertEquals(new Bundle(['B', 'C']), $bundle);
+        $this->assertEquals(['A' => 1], $remainingBooks);
+
+        list ($bundle, $remainingBooks) = $all[2];
+        $this->assertEquals(new Bundle(['A', 'C']), $bundle);
+        $this->assertEquals(['B' => 1], $remainingBooks);
+    }
+
     public function testMovementOfBooksBetweenBundles()
     {
         $targetBundle = new Bundle(['A', 'B']);
@@ -252,6 +286,24 @@ class Bundle implements Countable
             }
         }
         return [new self($titles), $books];
+    }
+
+    public static function extractAll(array $books, $cardinality)
+    {
+        $all = [];
+        foreach ($books as $title => $number) {
+            $remainingBooks = $books;
+            $bundle = new self([$title]);
+            $remainingBooks[$title]--;
+            if ($remainingBooks[$title] == 0) {
+                unset($remainingBooks[$title]);
+            }
+            $all[] = [
+                $bundle,
+                $remainingBooks
+            ];
+        }
+        return $all;
     }
 
     public function __construct($titles)
