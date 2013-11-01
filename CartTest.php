@@ -72,6 +72,13 @@ class CartTest extends \PHPUnit_Framework_TestCase
         list ($bundle, $remainingBooks) = Bundle::extractFrom(['A' => 1, 'B' => 1, 'C' => 1, 'D' => 1, 'E' => 1]);
         $this->assertEquals(8 * 5 * 0.75, $bundle->price());
     }
+
+    public function testABundleCanBeExtractedFromAGroupContainingTwoIdenticalBook()
+    {
+        list ($bundle, $remainingBooks) = Bundle::extractFrom(['A' => 2, 'B' => 1]);
+        $this->assertEquals(new Bundle(['A', 'B']), $bundle);
+        $this->assertEquals(['A' => 1], $remainingBooks);
+    }
 }
 
 class Cart
@@ -119,10 +126,18 @@ class Bundle
 
     public static function extractFrom(array $books)
     {
-        return [new self(array_keys($books)), []];
+        $titles = [];
+        foreach ($books as $title => $number) {
+            $books[$title]--;
+            if ($books[$title] == 0) {
+                unset($books[$title]);
+            }
+            $titles[] = $title;
+        }
+        return [new self($titles), $books];
     }
 
-    private function __construct($titles)
+    public function __construct($titles)
     {
         $this->titles = $titles;
     }
