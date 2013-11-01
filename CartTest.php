@@ -239,7 +239,7 @@ class Cart
             }
             $bags = new BundleBagSet();
             foreach ($heightTwo as $bag) {
-                $bags->add($bag->anonymous());
+                $bags = $bags->add($bag->anonymous());
             }
             $max = 0;
             foreach ($bags as $bag) {
@@ -268,6 +268,7 @@ class Bundle implements Countable
         5 => 0.25,
     ];
     private $titles;
+    private $string;
     private static $bundlesMemoization;
 
     public static function extractAllUpTo(array $books, $maximumCardinality)
@@ -311,7 +312,7 @@ class Bundle implements Countable
                 if ($remainingBooks[$title] == 0) {
                     unset($remainingBooks[$title]);
                 }
-                $all->add(
+                $all = $all->add(
                     $newBundle,
                     $remainingBooks
                 );
@@ -329,7 +330,10 @@ class Bundle implements Countable
 
     public function __toString()
     {
-        return implode(',', $this->titles);
+        if ($this->string === null) {
+           $this->string = implode(',', $this->titles);
+        }
+        return $this->string;
     }
 
     public static function fromString($representation)
@@ -380,11 +384,14 @@ class BundleSet implements IteratorAggregate, ArrayAccess, Countable
     {
         foreach ($this->bundles as $each) {
             if ($each == $bundle) {
-                return;
+                return $this;
             }
         }
-        $this->bundles[] = $bundle;
-        $this->remainingBooksList[] = $remainingBooks;
+        $bundles = $this->bundles;
+        $remainingBooksList = $this->remainingBooksList;
+        $bundles[] = $bundle;
+        $remainingBooksList[] = $remainingBooks;
+        return new self($bundles, $remainingBooksList);
     }
 
     public function getIterator()
@@ -452,6 +459,8 @@ class BundleSet implements IteratorAggregate, ArrayAccess, Countable
 
 class BundleBag
 {
+    private $string;
+
     public function __construct(array $bundles, array $remainingBooks)
     {
         usort($bundles, function($bundleA, $bundleB) {
@@ -468,11 +477,14 @@ class BundleBag
 
     public function __toString()
     {
-        $remainingBooks = [];
-        foreach ($this->remainingBooks as $title => $number) {
-            $remainingBooks[] = "{$title}={$number}";
+        if ($this->string === null) {
+            $remainingBooks = [];
+            foreach ($this->remainingBooks as $title => $number) {
+                $remainingBooks[] = "{$title}={$number}";
+            }
+            $this->string = implode(';', $this->bundles) . '|' . implode(';', $remainingBooks);
         }
-        return implode(';', $this->bundles) . '|' . implode(';', $remainingBooks);
+        return $this->string;
     }
 
     public static function fromString($representation)
@@ -573,8 +585,9 @@ class BundleBagSet implements IteratorAggregate, Countable
                 return $this;
             }
         }
-        $this->bundleBags[] = $bag;
-        return $this;
+        $bundleBags = $this->bundleBags;
+        $bundleBags[] = $bag;
+        return new self($bundleBags);
     }
 
     public function minimumBag()
