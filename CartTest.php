@@ -87,6 +87,21 @@ class CartTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testAnotherMegaAcceptanceTestFromC2Wiki()
+    {
+        $this->markTestIncomplete("Explodes in computational complexity");
+        $this->cart->addBooks('A', 5);
+        $this->cart->addBooks('B', 5);
+        $this->cart->addBooks('C', 4);
+        $this->cart->addBooks('D', 5);
+        $this->cart->addBooks('E', 4);
+        $this->assertEquals(
+            3 * (8 * 5 * 0.75) + 
+            2 * (8 * 4 * 0.8), 
+            $this->cart->price()
+        );
+    }
+
     // -- Bundle unit tests
 
     public function testABundleCalculateAPriceOnlyOnDifferentBooks()
