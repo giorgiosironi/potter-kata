@@ -155,6 +155,21 @@ class Cart
 
     private function optimize(array $bundles)
     {
+        $candidateSources = [];
+        foreach ($bundles as $bundle) {
+            if (count($bundle) == 5) {
+                $candidateSources[] = $bundle;
+            }
+        }
+        $candidateTargets = [];
+        foreach ($bundles as $bundle) {
+            if (count($bundle) == 3) {
+                $candidateTargets[] = $bundle;
+            }
+        }
+        for ($i = 0; $i < count($candidateSources) && $i < count($candidateTargets); $i++) {
+            $candidateSources[$i]->move('E', $candidateTargets[$i]);
+        }
         return $bundles;
     }
 
