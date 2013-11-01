@@ -254,6 +254,7 @@ class Cart
 
     private function optimalBundles()
     {
+        $greedySolution = $this->sumOf($this->divideInBundles());
         $bags = Bundle::extractAllUpTo($this->books, 5)->asBags();
 
         $finished = false;
@@ -262,6 +263,10 @@ class Cart
             $finished = true;
             $heightTwo = [];
             foreach ($bags as $bag) {
+                if ($bag->minimumPrice() > $greedySolution) {
+                    echo "Skipping $bag", PHP_EOL;
+                    continue;
+                }
                 if ($bag->hasRemainingBooks()) {
                     $finished = false;
                     $heightTwo = array_merge($heightTwo, $bag->expand(5));
