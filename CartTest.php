@@ -123,6 +123,29 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(3, count($targetBundle));
         $this->assertEquals(1, count($sourceBundle));
     }
+
+    public function testPossibleMovements()
+    {
+        $bundle = new Bundle([]);
+        foreach ($bundle->discountScale as $numberA => $discountA) {
+            foreach ($bundle->discountScale as $numberB => $discountB) {
+                if ($numberA == 1) {
+                    continue;
+                }
+                if ($numberB == 5) {
+                    continue;
+                }
+                $current = $numberA * (1 - $discountA) + $numberB * (1 - $discountB);
+                $targetNumberA = $numberA - 1;
+                $targetNumberB = $numberB + 1;
+                $targetRight = ($targetNumberA) * (1 - $bundle->discountScale[$targetNumberA]) +
+                               ($targetNumberB) * (1 - $bundle->discountScale[$targetNumberB]);
+                if ($targetRight < $current) {
+                    echo "Moving from $numberA, $numberB to $targetNumberA, $targetNumberB gives a better discount (from $current to $targetRight)", PHP_EOL;
+                }
+            }
+        }
+    }
 }
 
 class Cart
@@ -186,7 +209,7 @@ class Cart
 class Bundle implements Countable
 {
     const PRICE_SINGLE = 8;
-    private $discountScale = [
+    public $discountScale = [
         1 => 0.00,
         2 => 0.05,
         3 => 0.10,
