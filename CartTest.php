@@ -149,6 +149,16 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(['A' => 1], $remainingBooks);
     }
 
+    public function testIdenticalBooksCannotGoInTheSameBundle()
+    {
+        $all = Bundle::extractAll(['A' => 2, 'B' => 1], 2);
+        $this->assertEquals(1, count($all));
+
+        list ($bundle, $remainingBooks) = $all[0];
+        $this->assertEquals(new Bundle(['A', 'B']), $bundle);
+        $this->assertEquals(['A' => 1], $remainingBooks);
+    }
+
     public function testMovementOfBooksBetweenBundles()
     {
         $targetBundle = new Bundle(['A', 'B']);
