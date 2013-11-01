@@ -154,6 +154,14 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(['A' => 1], $remainingBooks);
     }
 
+    public function testABundleCanBeAnonymizedSinceItsPriceOnlyDependsOnTheNumbersOfBooksContained()
+    {
+        $this->assertEquals(
+            (new Bundle(['A', 'B']))->anonymize(),
+            (new Bundle(['C', 'D']))->anonymize()
+        );
+    }
+
     // BundleBag test
     public function testABundleBagCanGiveAMinimumEstimateOfItsPriceByConsideringOnlyTheBundlesAndNotTheRemainingBooks()
     {
@@ -238,7 +246,11 @@ class Bundle implements Countable
     {
         $bundleSet = new BundleSet();
         for ($i = 1; $i <= $maximumCardinality; $i++) {
-            $bundleSet = $bundleSet->merge(self::extractAll($books, $i));
+            $bundleSet = $bundleSet->merge(self::extractAll($books, $i)->anonymous());
+            //$bundleSet = $bundleSet->merge(self::extractAll($books, $i));
+        }
+        foreach ($bundleSet as $each) {
+            echo $each[0], PHP_EOL;
         }
         return $bundleSet;
     }
@@ -247,7 +259,7 @@ class Bundle implements Countable
     {
         if ($cardinality == 0) {
             return [
-                [new Bundle([]), $books]
+                [new self([]), $books]
             ];
         }
         $all = new BundleSet();
@@ -296,6 +308,12 @@ class Bundle implements Countable
         return self::PRICE_SINGLE 
             * $numberOfDifferentBooks
             * (1 - $discount);
+    }
+
+    public function anonymize()
+    {
+        $titles = array_map(function() { return 'X'; }, $this->titles);
+        return new self($titles);
     }
 
     public function merge($title)
@@ -367,6 +385,12 @@ class BundleSet implements IteratorAggregate, ArrayAccess, Countable
             array_merge($this->bundles, $another->bundles),
             array_merge($this->remainingBooksList, $another->remainingBooksList)
         );
+    }
+
+    public function anonymous()
+    {
+        $bundles = array_map(function(Bundle $bundle) { return $bundle->anonymize(); }, $this->bundles);
+        return new self($bundles, $this->remainingBooksList);
     }
 
     public function offsetGet($offset)
