@@ -75,7 +75,6 @@ class CartTest extends \PHPUnit_Framework_TestCase
 
     public function testMegaAcceptanceTestFromC2Wiki()
     {
-        $this->markTestIncomplete();
         $this->cart->addBooks('A', 2);
         $this->cart->addBooks('B', 2);
         $this->cart->addBooks('C', 2);
