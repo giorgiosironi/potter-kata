@@ -169,6 +169,14 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(8 * 2, $bundleBag->minimumPrice());
     }
 
+    public function testAnAnonymousBundleBagChangesTheNameOfTheBooksToCanonicalOnesToBeEqualToEuivalentOnes()
+    {
+        $this->assertEquals(
+            BundleBag::fromString('A;B|C=2;D=1')->anonymous(),
+            BundleBag::fromString('A;B|C=1;D=2')->anonymous()
+        );
+    }
+
     // BundleBagSet tests
     public function testBundleBagSetsCannotContainDuplicateBundleBags()
     {
@@ -206,6 +214,7 @@ class Cart
 
     private function optimalBundles()
     {
+        error_log("Optimal bundles");
         $bags = Bundle::extractAllUpTo($this->books, 5)->asBags();
 
         $finished = false;
@@ -222,8 +231,12 @@ class Cart
             }
             $bags = new BundleBagSet();
             foreach ($heightTwo as $bag) {
-                $bags->add($bag);
+                $bags->add($bag->anonymous());
             }
+            foreach ($bags as $bag) {
+                error_log($bag);
+            }
+            error_log("BundleBagSet now contains " . count($bags) . " bags");
         }
         
         return $bags->minimumBag();
@@ -247,10 +260,6 @@ class Bundle implements Countable
         $bundleSet = new BundleSet();
         for ($i = 1; $i <= $maximumCardinality; $i++) {
             $bundleSet = $bundleSet->merge(self::extractAll($books, $i)->anonymous());
-            //$bundleSet = $bundleSet->merge(self::extractAll($books, $i));
-        }
-        foreach ($bundleSet as $each) {
-            echo $each[0], PHP_EOL;
         }
         return $bundleSet;
     }
@@ -495,6 +504,21 @@ class BundleBag
             $heightTwo[] = $this->add($bundle, $newRemainingBooks);
         }
         return $heightTwo;
+    }
+
+    public function anonymous()
+    {
+        $copiesOfEachBook = array_values($this->remainingBooks);
+        rsort($copiesOfEachBook);
+        $canonicalTitles = ['A', 'B', 'C', 'D', 'E'];
+        $canonicalRemainingBooks = [];
+        foreach ($copiesOfEachBook as $index => $value) {
+            $canonicalRemainingBooks[$canonicalTitles[$index]] = $value;
+        }
+        return new self(
+            $this->bundles,
+            $canonicalRemainingBooks
+        );
     }
 }
 
