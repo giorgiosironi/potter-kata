@@ -104,32 +104,6 @@ class CartTest extends \PHPUnit_Framework_TestCase
 
     // -- Bundle unit tests
 
-    public function testABundleCalculateAPriceOnlyOnDifferentBooks()
-    {
-        list ($bundle, $remainingBooks) = Bundle::extractGreedily(['A' => 1, 'B' => 1]);
-        $this->assertEquals(8 * 2 * 0.95, $bundle->price());
-    }
-
-    public function testABundleCalculateAPriceOnAnyNumberOfDifferentBooks()
-    {
-        list ($bundle, $remainingBooks) = Bundle::extractGreedily(['A' => 1, 'B' => 1, 'C' => 1, 'D' => 1, 'E' => 1]);
-        $this->assertEquals(8 * 5 * 0.75, $bundle->price());
-    }
-
-    public function testABundleCanBeExtractedFromAGroupContainingTwoIdenticalBook()
-    {
-        list ($bundle, $remainingBooks) = Bundle::extractGreedily(['A' => 2, 'B' => 1]);
-        $this->assertEquals(new Bundle(['A', 'B']), $bundle);
-        $this->assertEquals(['A' => 1], $remainingBooks);
-    }
-
-    public function testAMaximumCardinalityOfABundleCanBeRequested()
-    {
-        list ($bundle, $remainingBooks) = Bundle::extractGreedily(['A' => 1, 'B' => 1, 'C' => 1], 2);
-        $this->assertEquals(new Bundle(['A', 'B']), $bundle);
-        $this->assertEquals(['C' => 1], $remainingBooks);
-    }
-
     public function testAllPossibleBundlesOfSingleBooksCanBeRequested()
     {
         $all = Bundle::extractAll(['A' => 1, 'B' => 1, 'C' => 1], 1);
@@ -180,56 +154,6 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(['A' => 1], $remainingBooks);
     }
 
-    public function testMovementOfBooksBetweenBundles()
-    {
-        $targetBundle = new Bundle(['A', 'B']);
-        $sourceBundle = new Bundle(['C', 'D']);
-        $sourceBundle->move('D', $targetBundle);
-        $this->assertEquals(3, count($targetBundle));
-        $this->assertEquals(1, count($sourceBundle));
-    }
-
-    public function testMovementOfANumberOfBooksBetweenBundlesCanBeRequested()
-    {
-        $targetBundle = new Bundle(['A', 'B']);
-        $sourceBundle = new Bundle(['C', 'D']);
-        $sourceBundle->move(1, $targetBundle);
-        $this->assertEquals(new Bundle(['A', 'B', 'C']), $targetBundle);
-        $this->assertEquals(new Bundle(['D']), $sourceBundle);
-    }
-
-    public function testNoDuplicatesCanBeCreatedDuringMovement()
-    {
-        $targetBundle = new Bundle(['A', 'B']);
-        $sourceBundle = new Bundle(['A', 'C']);
-        $sourceBundle->move(1, $targetBundle);
-        $this->assertEquals(new Bundle(['A', 'B', 'C']), $targetBundle);
-        $this->assertEquals(new Bundle(['A']), $sourceBundle);
-    }
-
-    public function _testPossibleMovements()
-    {
-        $bundle = new Bundle([]);
-        foreach ($bundle->discountScale as $numberA => $discountA) {
-            foreach ($bundle->discountScale as $numberB => $discountB) {
-                if ($numberA == 1) {
-                    continue;
-                }
-                if ($numberB == 5) {
-                    continue;
-                }
-                $current = $numberA * (1 - $discountA) + $numberB * (1 - $discountB);
-                $targetNumberA = $numberA - 1;
-                $targetNumberB = $numberB + 1;
-                $targetRight = ($targetNumberA) * (1 - $bundle->discountScale[$targetNumberA]) +
-                               ($targetNumberB) * (1 - $bundle->discountScale[$targetNumberB]);
-                if ($targetRight < $current) {
-                    echo "Moving from $numberA, $numberB to $targetNumberA, $targetNumberB gives a better discount (from $current to $targetRight)", PHP_EOL;
-                }
-            }
-        }
-    }
-
     // BundleBag test
     public function testABundleBagCanGiveAMinimumEstimateOfItsPriceByConsideringOnlyTheBundlesAndNotTheRemainingBooks()
     {
@@ -270,9 +194,6 @@ class Cart
     public function price()
     {
         return $this->optimalBundles()->price();
-        return $this->sumOf(
-            $this->optimize($this->divideInBundles())
-        );
     }
 
     private function optimalBundles()
@@ -299,46 +220,6 @@ class Cart
         
         return $bags->minimumBag();
     }
-
-    private function divideInBundles()
-    {
-        $bundles = [];
-        $remainingBooks = $this->books;
-        while ($remainingBooks) {
-            list ($bundle, $remainingBooks) = Bundle::extractGreedily($remainingBooks);
-            $bundles[] = $bundle;
-        }
-        return $bundles;
-    }
-
-    private function optimize(array $bundles)
-    {
-        $candidateSources = [];
-        foreach ($bundles as $bundle) {
-            if (count($bundle) == 5) {
-                $candidateSources[] = $bundle;
-            }
-        }
-        $candidateTargets = [];
-        foreach ($bundles as $bundle) {
-            if (count($bundle) == 3) {
-                $candidateTargets[] = $bundle;
-            }
-        }
-        for ($i = 0; $i < count($candidateSources) && $i < count($candidateTargets); $i++) {
-            $candidateSources[$i]->move(1, $candidateTargets[$i]);
-        }
-        return $bundles;
-    }
-
-    private function sumOf(array $bundles)
-    {
-        $price = 0;
-        foreach ($bundles as $bundle) {
-            $price += $bundle->price();
-        }
-        return $price;
-    }
 }
 
 class Bundle implements Countable
@@ -352,24 +233,6 @@ class Bundle implements Countable
         5 => 0.25,
     ];
     private $titles;
-
-    public static function extractGreedily(array $books, $maximumCardinality = 5)
-    {
-        $titles = [];
-        $extracted = 0;
-        foreach ($books as $title => $number) {
-            $books[$title]--;
-            if ($books[$title] == 0) {
-                unset($books[$title]);
-            }
-            $titles[] = $title;
-            $extracted++;
-            if ($extracted == $maximumCardinality) {
-                break;
-            }
-        }
-        return [new self($titles), $books];
-    }
 
     public static function extractAllUpTo(array $books, $maximumCardinality)
     {
@@ -443,25 +306,6 @@ class Bundle implements Countable
     public function contains($title)
     {
         return array_search($title, $this->titles) !== false;
-    }
-
-    public function move($title, Bundle $target)
-    {
-        if (is_string($title)) {
-            unset($this->titles[array_search($title, $this->titles)]);
-            $target->titles[] = $title;
-        } else {
-            $howMany = $title;
-            if ($howMany == 0) {
-                return;
-            }
-            // support only $howMany == 1
-            $possibleMovements  = array_diff($this->titles, $target->titles);
-            $this->move(reset($possibleMovements), $target);
-            $this->move($howMany - 1, $target);
-            $this->titles = array_values($this->titles);
-            $target->titles = array_values($target->titles);
-        }
     }
 
     public function count()
