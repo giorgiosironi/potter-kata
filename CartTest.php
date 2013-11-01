@@ -144,6 +144,7 @@ class Bundle
 {
     const PRICE_SINGLE = 8;
     private $discountScale = [
+        1 => 0.00,
         2 => 0.05,
         3 => 0.10,
         4 => 0.20,
@@ -177,7 +178,7 @@ class Bundle
     public function price()
     {
         $numberOfDifferentBooks = count($this->titles);
-        $discount = isset($this->discountScale[$numberOfDifferentBooks]) ? $this->discountScale[$numberOfDifferentBooks] : 0;
+        $discount = $this->discountScale[$numberOfDifferentBooks];
         return self::PRICE_SINGLE 
             * $numberOfDifferentBooks
             * (1 - $discount);
