@@ -3,7 +3,7 @@
 class Bundle implements Countable
 {
     const PRICE_SINGLE = 8;
-    public $discountScale = [
+    private static $discountScale = [
         1 => 0.00,
         2 => 0.05,
         3 => 0.10,
@@ -113,10 +113,18 @@ class Bundle implements Countable
         return self::flyweight(explode(',', $representation));
     }
 
+    public static function bestPossiblePrice($numberOfBooks)
+    {
+        $bestDiscount = end(self::$discountScale);
+        return self::PRICE_SINGLE 
+            * $numberOfBooks
+            * (1 - $bestDiscount);
+    }
+
     public function price()
     {
         $numberOfDifferentBooks = count($this->titles);
-        $discount = $this->discountScale[$numberOfDifferentBooks];
+        $discount = self::$discountScale[$numberOfDifferentBooks];
         return self::PRICE_SINGLE 
             * $numberOfDifferentBooks
             * (1 - $discount);

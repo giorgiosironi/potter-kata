@@ -78,6 +78,7 @@ class PotentialSolution
         foreach ($this->bundles as $bundle) {
             $minimum += $bundle->price();
         }
+        $minimum += Bundle::bestPossiblePrice(count($this->remainingBooks));
         return $minimum;
     }
 
