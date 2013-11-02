@@ -34,7 +34,7 @@ class Cart
                     $heightTwo = array_merge($heightTwo, [$bag]);
                 }
             }
-            $bags = new BundleBagSet();
+            $bags = new PotentialSolutionSet();
             foreach ($heightTwo as $bag) {
                 $bags = $bags->add($bag->anonymous());
             }
@@ -46,7 +46,7 @@ class Cart
                 }
                 //error_log($bag);
             }
-            error_log("BundleBagSet now contains " . count($bags) . " bags");
+            error_log("PotentialSolutionSet now contains " . count($bags) . " bags");
             error_log("Maximum remaining books is $max");
         }
         

@@ -1,6 +1,6 @@
 <?php
 
-class BundleBagSet implements IteratorAggregate, Countable
+class PotentialSolutionSet implements IteratorAggregate, Countable
 {
     public function __construct(array $bundleBags = [])
     {

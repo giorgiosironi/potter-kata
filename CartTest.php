@@ -1,9 +1,4 @@
 <?php
-require_once 'Cart.php';
-require_once 'Bundle.php';
-require_once 'BundleSet.php';
-require_once 'BundleBag.php';
-require_once 'BundleBagSet.php';
 
 class CartTest extends \PHPUnit_Framework_TestCase
 {
@@ -216,20 +211,20 @@ class CartTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    // BundleBagSet tests
-    public function testBundleBagSetsCannotContainDuplicateBundleBags()
+    // PotentialSolutionSet tests
+    public function testPotentialSolutionSetsCannotContainDuplicateBundleBags()
     {
         $this->assertEquals(
-            new BundleBagSet([BundleBag::fromString('A,B|')]),
-            (new BundleBagSet([BundleBag::fromString('A,B|')]))->add(BundleBag::fromString('A,B|'))
+            new PotentialSolutionSet([BundleBag::fromString('A,B|')]),
+            (new PotentialSolutionSet([BundleBag::fromString('A,B|')]))->add(BundleBag::fromString('A,B|'))
         );
     }
 
     public function testBundleBagsCreatedInDifferentOrderAreStillIdentical()
     {
         $this->assertEquals(
-            new BundleBagSet([BundleBag::fromString('A;B|')]),
-            (new BundleBagSet([BundleBag::fromString('B;A|')]))->add(BundleBag::fromString('A;B|'))
+            new PotentialSolutionSet([BundleBag::fromString('A;B|')]),
+            (new PotentialSolutionSet([BundleBag::fromString('B;A|')]))->add(BundleBag::fromString('A;B|'))
         );
     }
 }

@@ -39,7 +39,7 @@ class BundleSet implements IteratorAggregate, ArrayAccess, Countable
             list($bundle, $remainingBooks) = $tuple;
             $entries[] = BundleBag::flyweight([$bundle], $remainingBooks);
         }
-        return new BundleBagSet($entries);
+        return new PotentialSolutionSet($entries);
     }
 
     public function count()
