@@ -2,53 +2,53 @@
 
 class PotentialSolutionSet implements IteratorAggregate, Countable
 {
-    public function __construct(array $bundleBags = [])
+    public function __construct(array $potentialSolutions = [])
     {
-        $this->bundleBags = $bundleBags;
+        $this->potentialSolutions = $potentialSolutions;
     }
 
     public function getIterator()
     {
-        return new ArrayIterator($this->bundleBags);
+        return new ArrayIterator($this->potentialSolutions);
     }
 
     public function count()
     {
-        return count($this->bundleBags);
+        return count($this->potentialSolutions);
     }
 
-    public function add(PotentialSolution $bag)
+    public function add(PotentialSolution $potentialSolution)
     {
-        foreach ($this->bundleBags as $each) {
-            if ($each == $bag) {
+        foreach ($this->potentialSolutions as $each) {
+            if ($each == $potentialSolution) {
                 return $this;
             }
         }
-        $bundleBags = $this->bundleBags;
-        $bundleBags[] = $bag;
-        return new self($bundleBags);
+        $potentialSolutions = $this->potentialSolutions;
+        $potentialSolutions[] = $potentialSolution;
+        return new self($potentialSolutions);
     }
 
-    public function minimumBag()
+    public function bestSolution()
     {
         if (!$this->first()) {
             return PotentialSolution::fromString('|');
         }
         $minimum = $this->first()->price();
-        $minimumBag = $this->first();
-        foreach ($this->bundleBags as $bag) {
-            if ($bag->price() < $minimum) {
-                $minimum = $bag->price();
-                $minimumBag = $bag;
+        $bestSolution = $this->first();
+        foreach ($this->potentialSolutions as $potentialSolution) {
+            if ($potentialSolution->price() < $minimum) {
+                $minimum = $potentialSolution->price();
+                $bestSolution = $potentialSolution;
             }
         }
-        echo "Evaluated " . count($this->bundleBags) . " solutions." , PHP_EOL;
-        return $minimumBag;
+        echo "Evaluated " . count($this->potentialSolutions) . " solutions." , PHP_EOL;
+        return $bestSolution;
     }
 
     private function first()
     {
-        reset($this->bundleBags);
-        return current($this->bundleBags);
+        reset($this->potentialSolutions);
+        return current($this->potentialSolutions);
     }
 }

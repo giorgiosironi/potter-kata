@@ -32,7 +32,7 @@ class BundleSet implements IteratorAggregate, ArrayAccess, Countable
         return new ArrayIterator($entries);
     }
 
-    public function asBags()
+    public function asPotentialSolutions()
     {
         $entries = [];
         foreach ($this as $tuple) {
