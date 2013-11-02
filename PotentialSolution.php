@@ -104,6 +104,17 @@ class PotentialSolution
         return $heightTwo;
     }
 
+    public function becomeGreedy()
+    {
+        if (!$this->remainingBooks) {
+            return $this;
+        }
+        list ($bundle, $remainingBooks) = Bundle::extractGreedily($this->remainingBooks);
+        $bundles = $this->bundles;
+        $bundles[] = $bundle;
+        return (new self($bundles, $remainingBooks))->becomeGreedy();
+    }
+
     public function anonymous()
     {
         $copiesOfEachBook = array_values($this->remainingBooks);

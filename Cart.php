@@ -32,7 +32,10 @@ class Cart
             foreach ($potentialSolutions as $potentialSolution) {
                 if ($greedySolution) {
                     if ($potentialSolution->minimumPrice() > $greedySolution->price()) {
+                        error_log("Excluding");
                         continue;
+                    } else {
+                        error_log("Greedy: {$greedySolution->price()}; Potential: >= {$potentialSolution->minimumPrice()}");
                     }
                 }
                 if ($potentialSolution->hasRemainingBooks()) {
@@ -54,7 +57,7 @@ class Cart
                 }
                 //error_log($potentialSolution);
             }
-            error_log("PotentialSolutionSet now contains " . count($potentialSolutions) . " bags");
+            error_log("PotentialSolutionSet now contains " . count($potentialSolutions) . " potential solutions");
             error_log("Maximum remaining books is $max");
         }
         
@@ -63,13 +66,13 @@ class Cart
 
     private function greedyBundles()
     {
+        return (new PotentialSolution([], $this->books))->becomeGreedy();
         $bundles = [];
         $remainingBooks = $this->books;
         while ($remainingBooks) {
             list ($bundle, $remainingBooks) = Bundle::extractGreedily($remainingBooks);
             $bundles[] = $bundle;
         }
-        return new PotentialSolution($bundles, []);
     }
 
     private function sumOf(array $bundles)

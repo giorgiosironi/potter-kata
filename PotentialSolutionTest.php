@@ -14,6 +14,12 @@ class PotentialSolutionTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(8 * 2 + 8 * 2 * 0.75, $potentialSolution->minimumPrice());
     }
 
+    public function testAPotentialSolutionCanCalculateItsPriceIfItStartedToBeGreedy()
+    {
+        $potentialSolution = PotentialSolution::fromString('A;B|C=1;D=1;E=1');
+        $this->assertEquals(8 * 2 + 8 * 3 * 0.90, $potentialSolution->becomeGreedy()->price());
+    }
+
     public function testAnAnonymousPotentialSolutionChangesTheNameOfTheBooksToCanonicalOnesToBeEqualToEquivalentOnes()
     {
         $this->assertEquals(
