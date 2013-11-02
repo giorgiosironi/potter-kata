@@ -14,10 +14,10 @@ class Cart
 
     public function price()
     {
-        $greedySolution = $this->greedyBundles()->price();
-        $optimalSolution = $this->optimalBundles()->price();
-        var_dump($greedySolution, $optimalSolution);
-        return $optimalSolution;
+        $greedySolution = $this->greedyBundles();
+        $optimalSolution = $this->optimalBundles($greedySolution);
+        var_dump($greedySolution->price(), $optimalSolution->price());
+        return $optimalSolution->price();
     }
 
     private function optimalBundles($greedySolution = null)
@@ -30,6 +30,11 @@ class Cart
             $finished = true;
             $heightTwo = [];
             foreach ($potentialSolutions as $potentialSolution) {
+                if ($greedySolution) {
+                    if ($potentialSolution->minimumPrice() > $greedySolution->price()) {
+                        continue;
+                    }
+                }
                 if ($potentialSolution->hasRemainingBooks()) {
                     $finished = false;
                     $heightTwo = array_merge($heightTwo, $potentialSolution->expand(5));
