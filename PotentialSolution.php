@@ -1,6 +1,6 @@
 <?php
 
-class BundleBag
+class PotentialSolution
 {
     private $string;
     private static $cache;

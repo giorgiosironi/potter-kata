@@ -188,43 +188,43 @@ class CartTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    // BundleBag test
-    public function testABundleBagCanGiveAMinimumEstimateOfItsPriceByConsideringOnlyTheBundlesAndNotTheRemainingBooks()
+    // PotentialSolution test
+    public function testAPotentialSolutionCanGiveAMinimumEstimateOfItsPriceByConsideringOnlyTheBundlesAndNotTheRemainingBooks()
     {
-        $bundleBag = BundleBag::fromString('A;B|C=1,D=1');
+        $bundleBag = PotentialSolution::fromString('A;B|C=1,D=1');
         $this->assertEquals(8 * 2, $bundleBag->minimumPrice());
     }
 
-    public function testAnAnonymousBundleBagChangesTheNameOfTheBooksToCanonicalOnesToBeEqualToEquivalentOnes()
+    public function testAnAnonymousPotentialSolutionChangesTheNameOfTheBooksToCanonicalOnesToBeEqualToEquivalentOnes()
     {
         $this->assertEquals(
-            BundleBag::fromString('A;B|C=2;D=1')->anonymous(),
-            BundleBag::fromString('A;B|C=1;D=2')->anonymous()
+            PotentialSolution::fromString('A;B|C=2;D=1')->anonymous(),
+            PotentialSolution::fromString('A;B|C=1;D=2')->anonymous()
         );
     }
 
-    public function testBundleBagAlsoReordersBundlesWhenTheBagIsEquivalent()
+    public function testPotentialSolutionAlsoReordersBundlesWhenTheBagIsEquivalent()
     {
         $this->assertEquals(
-            BundleBag::fromString('X;X,X|C=1'),
-            BundleBag::fromString('X,X;X|C=1')
+            PotentialSolution::fromString('X;X,X|C=1'),
+            PotentialSolution::fromString('X,X;X|C=1')
         );
     }
 
     // PotentialSolutionSet tests
-    public function testPotentialSolutionSetsCannotContainDuplicateBundleBags()
+    public function testPotentialSolutionSetsCannotContainDuplicatePotentialSolutions()
     {
         $this->assertEquals(
-            new PotentialSolutionSet([BundleBag::fromString('A,B|')]),
-            (new PotentialSolutionSet([BundleBag::fromString('A,B|')]))->add(BundleBag::fromString('A,B|'))
+            new PotentialSolutionSet([PotentialSolution::fromString('A,B|')]),
+            (new PotentialSolutionSet([PotentialSolution::fromString('A,B|')]))->add(PotentialSolution::fromString('A,B|'))
         );
     }
 
-    public function testBundleBagsCreatedInDifferentOrderAreStillIdentical()
+    public function testPotentialSolutionsCreatedInDifferentOrderAreStillIdentical()
     {
         $this->assertEquals(
-            new PotentialSolutionSet([BundleBag::fromString('A;B|')]),
-            (new PotentialSolutionSet([BundleBag::fromString('B;A|')]))->add(BundleBag::fromString('A;B|'))
+            new PotentialSolutionSet([PotentialSolution::fromString('A;B|')]),
+            (new PotentialSolutionSet([PotentialSolution::fromString('B;A|')]))->add(PotentialSolution::fromString('A;B|'))
         );
     }
 }

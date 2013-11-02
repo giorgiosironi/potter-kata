@@ -17,7 +17,7 @@ class PotentialSolutionSet implements IteratorAggregate, Countable
         return count($this->bundleBags);
     }
 
-    public function add(BundleBag $bag)
+    public function add(PotentialSolution $bag)
     {
         foreach ($this->bundleBags as $each) {
             if ($each == $bag) {
@@ -32,7 +32,7 @@ class PotentialSolutionSet implements IteratorAggregate, Countable
     public function minimumBag()
     {
         if (!$this->first()) {
-            return BundleBag::fromString('|');
+            return PotentialSolution::fromString('|');
         }
         $minimum = $this->first()->price();
         $minimumBag = $this->first();
