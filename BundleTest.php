@@ -81,8 +81,8 @@ class BundleTest extends PHPUnit_Framework_TestCase
     public function testABundleCanBeAnonymizedSinceItsPriceOnlyDependsOnTheNumbersOfBooksContained()
     {
         $this->assertEquals(
-            Bundle::flyweight(['A', 'B'])->anonymize(),
-            Bundle::flyweight(['C', 'D'])->anonymize()
+            Bundle::flyweight(['A', 'B'])->anonymous(),
+            Bundle::flyweight(['C', 'D'])->anonymous()
         );
     }
 }

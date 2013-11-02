@@ -134,7 +134,7 @@ class Bundle implements Countable
             * (1 - $discount);
     }
 
-    public function anonymize()
+    public function anonymous()
     {
         $titles = array_map(function() { return 'X'; }, $this->titles);
         return self::flyweight($titles);

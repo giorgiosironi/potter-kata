@@ -63,7 +63,7 @@ class BundleSet implements IteratorAggregate, ArrayAccess, Countable
 
     public function anonymous()
     {
-        $bundles = array_map(function(Bundle $bundle) { return $bundle->anonymize(); }, $this->bundles);
+        $bundles = array_map(function(Bundle $bundle) { return $bundle->anonymous(); }, $this->bundles);
         return new self($bundles, $this->remainingBooksList);
     }
 
