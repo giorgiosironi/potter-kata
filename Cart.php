@@ -14,11 +14,13 @@ class Cart
 
     public function price()
     {
-        $greedySolution = $this->sumOf($this->greedyBundles());
-        return $this->optimalBundles()->price();
+        $greedySolution = $this->greedyBundles()->price();
+        $optimalSolution = $this->optimalBundles()->price();
+        var_dump($greedySolution, $optimalSolution);
+        return $optimalSolution;
     }
 
-    private function optimalBundles()
+    private function optimalBundles($greedySolution = null)
     {
         error_log("Optimal bundles");
         $bags = Bundle::extractAllUpTo($this->books, 5)->asPotentialSolutions();
@@ -62,7 +64,7 @@ class Cart
             list ($bundle, $remainingBooks) = Bundle::extractGreedily($remainingBooks);
             $bundles[] = $bundle;
         }
-        return $bundles;
+        return new PotentialSolution($bundles, []);
     }
 
     private function sumOf(array $bundles)
