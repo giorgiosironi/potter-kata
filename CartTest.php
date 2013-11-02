@@ -89,7 +89,7 @@ class CartTest extends \PHPUnit_Framework_TestCase
 
     public function testAnotherMegaAcceptanceTestFromC2Wiki()
     {
-        $this->markTestIncomplete("Explodes in computational complexity");
+       // $this->markTestIncomplete("Explodes in computational complexity");
         $this->cart->addBooks('A', 5);
         $this->cart->addBooks('B', 5);
         $this->cart->addBooks('C', 4);
@@ -109,15 +109,15 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $all = Bundle::extractAll(['A' => 1, 'B' => 1, 'C' => 1], 1);
 
         list ($bundle, $remainingBooks) = $all[0];
-        $this->assertEquals(new Bundle(['A']), $bundle);
+        $this->assertEquals(Bundle::flyweight(['A']), $bundle);
         $this->assertEquals(['B' => 1, 'C' => 1], $remainingBooks);
 
         list ($bundle, $remainingBooks) = $all[1];
-        $this->assertEquals(new Bundle(['B']), $bundle);
+        $this->assertEquals(Bundle::flyweight(['B']), $bundle);
         $this->assertEquals(['A' => 1, 'C' => 1], $remainingBooks);
 
         list ($bundle, $remainingBooks) = $all[2];
-        $this->assertEquals(new Bundle(['C']), $bundle);
+        $this->assertEquals(Bundle::flyweight(['C']), $bundle);
         $this->assertEquals(['A' => 1, 'B' => 1], $remainingBooks);
     }
 
@@ -126,15 +126,15 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $all = Bundle::extractAll(['A' => 1, 'B' => 1, 'C' => 1], 2);
 
         list ($bundle, $remainingBooks) = $all[0];
-        $this->assertEquals(new Bundle(['A', 'B']), $bundle);
+        $this->assertEquals(Bundle::flyweight(['A', 'B']), $bundle);
         $this->assertEquals(['C' => 1], $remainingBooks);
 
         list ($bundle, $remainingBooks) = $all[1];
-        $this->assertEquals(new Bundle(['A', 'C']), $bundle);
+        $this->assertEquals(Bundle::flyweight(['A', 'C']), $bundle);
         $this->assertEquals(['B' => 1], $remainingBooks);
 
         list ($bundle, $remainingBooks) = $all[2];
-        $this->assertEquals(new Bundle(['B', 'C']), $bundle);
+        $this->assertEquals(Bundle::flyweight(['B', 'C']), $bundle);
         $this->assertEquals(['A' => 1], $remainingBooks);
     }
 
@@ -150,15 +150,15 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, count($all));
 
         list ($bundle, $remainingBooks) = $all[0];
-        $this->assertEquals(new Bundle(['A', 'B']), $bundle);
+        $this->assertEquals(Bundle::flyweight(['A', 'B']), $bundle);
         $this->assertEquals(['A' => 1], $remainingBooks);
     }
 
     public function testABundleCanBeAnonymizedSinceItsPriceOnlyDependsOnTheNumbersOfBooksContained()
     {
         $this->assertEquals(
-            (new Bundle(['A', 'B']))->anonymize(),
-            (new Bundle(['C', 'D']))->anonymize()
+            Bundle::flyweight(['A', 'B'])->anonymize(),
+            Bundle::flyweight(['C', 'D'])->anonymize()
         );
     }
 
@@ -270,6 +270,7 @@ class Bundle implements Countable
     private $titles;
     private $string;
     private static $bundlesMemoization;
+    private static $cache = [];
 
     public static function extractAllUpTo(array $books, $maximumCardinality)
     {
@@ -284,7 +285,7 @@ class Bundle implements Countable
     {
         if ($cardinality == 0) {
             return [
-                [new self([]), $books]
+                [self::flyweight([]), $books]
             ];
         }
 
@@ -328,6 +329,16 @@ class Bundle implements Countable
         $this->titles = $titles;
     }
 
+    public static function flyweight($titles)
+    {
+        $string = implode(',', $titles);
+        if (!isset(self::$cache[$string])) {
+            self::$cache[$string] = $flyweight = new self($titles);
+            self::$cache[(string) $flyweight] = $flyweight;
+        }
+        return self::$cache[$string];
+    }
+
     public function __toString()
     {
         if ($this->string === null) {
@@ -338,7 +349,7 @@ class Bundle implements Countable
 
     public static function fromString($representation)
     {
-        return new self(explode(',', $representation));
+        return self::flyweight(explode(',', $representation));
     }
 
     public function price()
@@ -353,12 +364,12 @@ class Bundle implements Countable
     public function anonymize()
     {
         $titles = array_map(function() { return 'X'; }, $this->titles);
-        return new self($titles);
+        return self::flyweight($titles);
     }
 
     public function merge($title)
     {
-        return new self(array_merge($this->titles, [$title]));
+        return self::flyweight(array_merge($this->titles, [$title]));
     }
 
     public function contains($title)
@@ -409,7 +420,7 @@ class BundleSet implements IteratorAggregate, ArrayAccess, Countable
         $entries = [];
         foreach ($this as $tuple) {
             list($bundle, $remainingBooks) = $tuple;
-            $entries[] = new BundleBag([$bundle], $remainingBooks);
+            $entries[] = BundleBag::flyweight([$bundle], $remainingBooks);
         }
         return new BundleBagSet($entries);
     }
@@ -460,6 +471,7 @@ class BundleSet implements IteratorAggregate, ArrayAccess, Countable
 class BundleBag
 {
     private $string;
+    private static $cache;
 
     public function __construct(array $bundles, array $remainingBooks)
     {
@@ -468,6 +480,20 @@ class BundleBag
         });
         $this->bundles = $bundles;
         $this->remainingBooks = $remainingBooks;
+    }
+
+    public static function flyweight(array $bundles, array $remainingBooks)
+    {
+        $remainingBooksStr = [];
+        foreach ($remainingBooks as $title => $number) {
+            $remainingBooksStr[] = "{$title}={$number}";
+        }
+        $signature = implode(';', $bundles) . '|' . implode(';', $remainingBooksStr);
+        if (!isset(self::$cache[$signature])) {
+            self::$cache[$signature] = $flyweight = new self($bundles, $remainingBooks);
+            self::$cache[(string) $signature] = $flyweight;
+        }
+        return self::$cache[$signature];
     }
 
     public function hasRemainingBooks()
@@ -503,12 +529,12 @@ class BundleBag
                 $remainingBooks[$title] = $number;
             }
         }
-        return new self($bags, $remainingBooks);
+        return self::flyweight($bags, $remainingBooks);
     }
 
     public function add(Bundle $bundle, array $newRemainingBooks)
     {
-        return new self(
+        return self::flyweight(
             array_merge($this->bundles, [$bundle]),
             $newRemainingBooks
         );
@@ -554,7 +580,7 @@ class BundleBag
         foreach ($copiesOfEachBook as $index => $value) {
             $canonicalRemainingBooks[$canonicalTitles[$index]] = $value;
         }
-        return new self(
+        return self::flyweight(
             $this->bundles,
             $canonicalRemainingBooks
         );
