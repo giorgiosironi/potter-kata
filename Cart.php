@@ -23,37 +23,37 @@ class Cart
     private function optimalBundles($greedySolution = null)
     {
         error_log("Optimal bundles");
-        $bags = Bundle::extractAllUpTo($this->books, 5)->asPotentialSolutions();
+        $potentialSolutions = Bundle::extractAllUpTo($this->books, 5)->asPotentialSolutions();
 
         $finished = false;
         while (!$finished) {
             $finished = true;
             $heightTwo = [];
-            foreach ($bags as $bag) {
-                if ($bag->hasRemainingBooks()) {
+            foreach ($potentialSolutions as $potentialSolution) {
+                if ($potentialSolution->hasRemainingBooks()) {
                     $finished = false;
-                    $heightTwo = array_merge($heightTwo, $bag->expand(5));
+                    $heightTwo = array_merge($heightTwo, $potentialSolution->expand(5));
                 } else {
-                    $heightTwo = array_merge($heightTwo, [$bag]);
+                    $heightTwo = array_merge($heightTwo, [$potentialSolution]);
                 }
             }
-            $bags = new PotentialSolutionSet();
-            foreach ($heightTwo as $bag) {
-                $bags = $bags->add($bag->anonymous());
+            $potentialSolutions = new PotentialSolutionSet();
+            foreach ($heightTwo as $potentialSolution) {
+                $potentialSolutions = $potentialSolutions->add($potentialSolution->anonymous());
             }
             $max = 0;
-            foreach ($bags as $bag) {
-                $candidate = array_sum(array_values($bag->remainingBooks));
+            foreach ($potentialSolutions as $potentialSolution) {
+                $candidate = array_sum(array_values($potentialSolution->remainingBooks));
                 if ($candidate > $max) {
                     $max = $candidate;
                 }
-                //error_log($bag);
+                //error_log($potentialSolution);
             }
-            error_log("PotentialSolutionSet now contains " . count($bags) . " bags");
+            error_log("PotentialSolutionSet now contains " . count($potentialSolutions) . " bags");
             error_log("Maximum remaining books is $max");
         }
         
-        return $bags->bestSolution();
+        return $potentialSolutions->bestSolution();
     }
 
     private function greedyBundles()

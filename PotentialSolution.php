@@ -47,11 +47,11 @@ class PotentialSolution
 
     public static function fromString($representation)
     {
-        list ($bagsRepresentations, $remainingBooksRepresentation) = explode("|", $representation);
-        $bags = [];
-        if ($bagsRepresentations) {
-            foreach (explode(";", $bagsRepresentations) as $bagRepresentation) {
-                $bags[] = Bundle::fromString($bagRepresentation); 
+        list ($potentialSolutionsRepresentations, $remainingBooksRepresentation) = explode("|", $representation);
+        $potentialSolutions = [];
+        if ($potentialSolutionsRepresentations) {
+            foreach (explode(";", $potentialSolutionsRepresentations) as $potentialSolutionRepresentation) {
+                $potentialSolutions[] = Bundle::fromString($potentialSolutionRepresentation); 
             }
         }
         $remainingBooks = [];
@@ -61,7 +61,7 @@ class PotentialSolution
                 $remainingBooks[$title] = $number;
             }
         }
-        return self::flyweight($bags, $remainingBooks);
+        return self::flyweight($potentialSolutions, $remainingBooks);
     }
 
     public function add(Bundle $bundle, array $newRemainingBooks)
