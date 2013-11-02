@@ -28,7 +28,7 @@ class Cart
         $finished = false;
         while (!$finished) {
             $finished = true;
-            $newSolutionSet = [];
+            $newSolutionSet = new PotentialSolutionSet();
             foreach ($potentialSolutions as $potentialSolution) {
                 if ($greedySolution) {
                     if ($potentialSolution->minimumPrice() > $greedySolution->price()) {
@@ -37,15 +37,14 @@ class Cart
                 }
                 if ($potentialSolution->hasRemainingBooks()) {
                     $finished = false;
-                    $newSolutionSet = array_merge($newSolutionSet, $potentialSolution->expand(5));
+                    foreach ($potentialSolution->expand(5) as $newBranch) {
+                        $newSolutionSet = $newSolutionSet->add($newBranch->anonymous());
+                    }
                 } else {
-                    $newSolutionSet = array_merge($newSolutionSet, [$potentialSolution]);
+                    $newSolutionSet = $newSolutionSet->add($potentialSolution->anonymous());
                 }
             }
-            $potentialSolutions = new PotentialSolutionSet();
-            foreach ($newSolutionSet as $potentialSolution) {
-                $potentialSolutions = $potentialSolutions->add($potentialSolution->anonymous());
-            }
+            $potentialSolutions = $newSolutionSet;
 
             $max = 0;
             foreach ($potentialSolutions as $potentialSolution) {
