@@ -32,10 +32,7 @@ class Cart
             foreach ($potentialSolutions as $potentialSolution) {
                 if ($greedySolution) {
                     if ($potentialSolution->minimumPrice() > $greedySolution->price()) {
-                        error_log("Excluding");
                         continue;
-                    } else {
-                        error_log("Greedy: {$greedySolution->price()}; Potential: >= {$potentialSolution->minimumPrice()}");
                     }
                 }
                 if ($potentialSolution->hasRemainingBooks()) {
@@ -49,6 +46,7 @@ class Cart
             foreach ($heightTwo as $potentialSolution) {
                 $potentialSolutions = $potentialSolutions->add($potentialSolution->anonymous());
             }
+
             $max = 0;
             foreach ($potentialSolutions as $potentialSolution) {
                 $candidate = array_sum(array_values($potentialSolution->remainingBooks));
