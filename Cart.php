@@ -80,13 +80,4 @@ class Cart
             $bundles[] = $bundle;
         }
     }
-
-    private function sumOf(array $bundles)
-    {
-        $price = 0;
-        foreach ($bundles as $bundle) {
-            $price += $bundle->price();
-        }
-        return $price;
-    }
 }
