@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Composed by a set of Bundles and the set of remaining books.
+ */
 class PotentialSolution
 {
     private $string;

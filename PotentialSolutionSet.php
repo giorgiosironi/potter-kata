@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * A set of solutions, representing the whole solution space
+ * or a pruned part of it.
+ */
 class PotentialSolutionSet implements IteratorAggregate, Countable
 {
     public function __construct(array $potentialSolutions = [])

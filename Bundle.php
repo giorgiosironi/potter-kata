@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Represents a set of books different from each other (up to 5)
+ * that are clustered together to get a discount (only on the books in the Bundle).
+ */
 class Bundle implements Countable
 {
     const PRICE_SINGLE = 8;

@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * A mathematical Set of Bundles, to ensure no duplicates are generated.
+ */
 class BundleSet implements IteratorAggregate, ArrayAccess, Countable
 {
     public function __construct($bundles = [], $remainingBooksList = [])
