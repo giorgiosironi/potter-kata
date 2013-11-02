@@ -96,12 +96,12 @@ class PotentialSolution
 
     public function expand($bundleMaximumCardinality)
     {
-        $heightTwo = [];
+        $solutionSet = [];
         foreach (Bundle::extractAllUpTo($this->remainingBooks, $bundleMaximumCardinality) as $secondTuple) {
             list($bundle, $newRemainingBooks) = $secondTuple;
-            $heightTwo[] = $this->add($bundle, $newRemainingBooks);
+            $solutionSet[] = $this->add($bundle, $newRemainingBooks);
         }
-        return $heightTwo;
+        return $solutionSet;
     }
 
     public function becomeGreedy()
